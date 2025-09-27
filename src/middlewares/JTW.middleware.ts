@@ -45,7 +45,7 @@ export const verifyJWT = async (
         },
       });
       if (!user) return res.status(404).json({ message: "User not found" });
-
+      req.token = token;
       req.user = {
         id: userId,
         email: user.email,
@@ -150,7 +150,7 @@ export const verifyJWTGuest = async (
   next: NextFunction
 ) => {
   try {
-    const token = req.cookies?.chat || req.headers?.authorization;
+    const token = req.cookies?.chat || req.headers?.authorization_chat;
     if (!token)
       return res
         .status(401)
@@ -166,7 +166,7 @@ export const verifyJWTGuest = async (
       if (err)
         return res.status(403).json({ message: "Forbidden: Invalid Token" });
       console.log(decoded, "decoded");
-
+      req.token = token;
       req.user = {
         locationId: decoded?.locationId,
         organizationId: decoded?.organizationId,

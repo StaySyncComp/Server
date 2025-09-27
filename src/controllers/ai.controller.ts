@@ -2,6 +2,7 @@ import { Request, Response } from "express";
 import { prismaClient } from "../prisma";
 import { ExtendedRequest } from "../types/users/usersRequests";
 import { generateTokenAndSetCookieDynamic } from "../utils/authUtils";
+import fastApiClient from "../utils/fastapiClient";
 
 export const upsertAiContext = async (req: Request, res: Response) => {
   try {
@@ -72,4 +73,42 @@ export const redirectWithCookie = async (
     "chat"
   );
   res.redirect(`${process.env.FRONTEND_URL}/chat`);
+};
+
+export const requestAi = async (req: ExtendedRequest, res: Response) => {
+  try {
+    const token = req?.token;
+    const cookies = req.cookies;
+    const response = await fastApiClient.post("/log", req.body, {
+      headers: {
+        ...(token ? { Authorization: `Bearer ${token}` } : {}),
+        ...(cookies
+          ? {
+              Cookie: Object.entries(cookies)
+                .map(([key, value]) => `${key}=${value}`)
+                .join(";"),
+            }
+          : {}),
+      },
+    });
+
+    res.status(response.status).json(response.data);
+  } catch (err: any) {
+    res.status(err?.response?.status || 500).json({
+      error: "Failed to contact AI service",
+      details: err?.response?.data || err.message,
+    });
+  }
+};
+
+export const requestGuestAi = async (req: Request, res: Response) => {
+  try {
+    const response = await fastApiClient.post("/guest", req.body);
+    res.status(response.status).json(response.data);
+  } catch (err: any) {
+    res.status(err?.response?.status || 500).json({
+      error: "Failed to contact AI service",
+      details: err?.response?.data || err.message,
+    });
+  }
 };

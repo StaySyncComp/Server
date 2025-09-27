@@ -26,8 +26,10 @@ export interface JWTGuestInfo {
 }
 export interface ExtendedRequestGuest extends Request {
   user?: JWTGuestInfo;
+  token?: string;
 }
 export interface ExtendedRequest extends Request {
+  token?: string;
   user?: JWTUserInfo & { organizationRoles: OrganizationRoleInfo[] };
   id?: number;
   query: {
