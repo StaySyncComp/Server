@@ -5,7 +5,6 @@ const baseUrl = process.env.FASTAPI_URL || "http://localhost:5000";
 const fastApiClient = axios.create({
   baseURL: baseUrl,
   headers: { "Content-Type": "application/json" },
-  timeout: 10000,
   withCredentials: true,
 });
 
