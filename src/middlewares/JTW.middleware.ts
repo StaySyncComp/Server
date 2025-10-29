@@ -150,6 +150,8 @@ export const verifyJWTGuest = async (
   next: NextFunction
 ) => {
   try {
+    console.log(req.cookies, "cookies");
+
     const token = req.cookies?.chat || req.headers?.authorization_chat;
     if (!token)
       return res

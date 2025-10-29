@@ -18,6 +18,7 @@ import http from "http";
 import { initializeSockets } from "./sockets";
 import { callsRouter } from "./routes/calls/calls.routes";
 import guestRouter from "./routes/guest.routes";
+import { IconsRouter } from "./routes/Icons.routes";
 
 const app: Express = express();
 const port: Number = Number(process.env.PORT) || 3101;
@@ -41,6 +42,7 @@ app.use("/calls", callsRouter);
 app.use("/roles", rolesRouter);
 app.use("/permissions", permissionRouter);
 app.use("/ai", aiRouter);
+app.use("/icons", IconsRouter);
 app.use("/reports", reportsRouter);
 app.use("/areas", areasRouter);
 app.use("/guest", guestRouter);
@@ -53,7 +55,7 @@ app.get("/", (req, res) => res.send("Server is live"));
 
 const server = http.createServer(app);
 const io = new Server(server, {
-  cors: { origin: "http://localhost:5173", credentials: true },
+  cors: { origin: true, credentials: true },
 });
 
 app.set("io", io);

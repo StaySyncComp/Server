@@ -9,53 +9,47 @@ datasource db {
 }
 
 model User {
-  id          Int     @id @default(autoincrement())
-  username    String  @unique
-  email       String  @unique
-  name        String
-  password    String
-  logo        String?
-  phoneNumber String?
-
-  expoPushToken         String[]
+  id                    Int                 @id @default(autoincrement())
+  name                  String
+  email                 String              @unique
+  password              String
   userType              UserType
-  organizationRoles     OrganizationRole[]
-  Organization          Organization[]
-  createdCalls          Call[]              @relation("CreatedCalls")
+  username              String              @unique
+  logo                  String?
+  expoPushToken         String[]
+  phoneNumber           String?
   assignedCalls         Call[]              @relation("AssignedCalls")
   closedCalls           Call[]              @relation("ClosedCalls")
-  recurringCreatedCalls RecurringCall[]     @relation("UserRecurringCreatedCalls")
+  createdCalls          Call[]              @relation("CreatedCalls")
   CallMessage           CallMessage[]
   assignedToUser        CallStatusHistory[] @relation("AssignedToUser")
   changedByUser         CallStatusHistory[] @relation("ChangedByUser")
   CallStatusHistory     CallStatusHistory[]
+  organizationRoles     OrganizationRole[]
+  Organization          Organization[]
+  recurringCreatedCalls RecurringCall[]     @relation("UserRecurringCreatedCalls")
 
   @@map("users")
 }
 
-enum UserType {
-  EMPLOYER
-  EMPLOYEE
-}
-
 model Organization {
   id                Int                @id @default(autoincrement())
-  ownerId           Int
   name              String
-  customStyles      Json // JSON field for custom styles
   logo              String
   years             String[]
+  customStyles      Json
+  ownerId           Int
+  aiSettingsId      Int?
+  CallMessage       CallMessage[]
+  aiSettings        AiSettings?
+  Area              Area[]
+  CallCategory      CallCategory[]
   departments       Department[]
   locations         Location[]
   organizationRoles OrganizationRole[]
   owner             User               @relation(fields: [ownerId], references: [id])
-  CallCategory      CallCategory[]
-  Role              Role[]
   recurringCalls    RecurringCall[]
-  Area              Area[]
-  CallMessage       CallMessage[]
-  aiSettings        AiSettings?
-  aiSettingsId      Int?
+  Role              Role[]
 
   @@map("organizations")
 }
@@ -65,10 +59,10 @@ model Department {
   name             Json
   logo             String?
   organizationId   Int
-  organization     Organization       @relation(fields: [organizationId], references: [id])
-  OrganizationRole OrganizationRole[]
   Call             Call[]
   CallCategory     CallCategory[]
+  organization     Organization       @relation(fields: [organizationId], references: [id])
+  OrganizationRole OrganizationRole[]
   recurringCalls   RecurringCall[]
 
   @@map("departments")
@@ -81,22 +75,21 @@ model Location {
   color          String?
   organizationId Int
   areaId         Int
+  Call           Call[]
   area           Area            @relation(fields: [areaId], references: [id])
   organization   Organization    @relation(fields: [organizationId], references: [id])
-  Call           Call[]
   RecurringCall  RecurringCall[]
 
   @@map("locations")
 }
 
 model Area {
-  id             Int    @id @default(autoincrement())
+  id             Int          @id @default(autoincrement())
   name           Json
   color          String
   organizationId Int
-
-  organization Organization @relation(fields: [organizationId], references: [id])
-  Location     Location[]
+  organization   Organization @relation(fields: [organizationId], references: [id])
+  Location       Location[]
 
   @@map("areas")
 }
@@ -105,37 +98,27 @@ model Role {
   id                Int                @id @default(autoincrement())
   name              Json
   organizationId    Int
+  permissions       Permission[]
+  organizationRoles OrganizationRole[]
   organization      Organization       @relation(fields: [organizationId], references: [id])
-  permissions       Permission[] // Permissions attached to this role
-  organizationRoles OrganizationRole[] // Users assigned this role within an organization
 
   @@unique([organizationId, name])
   @@map("roles")
 }
 
 model OrganizationRole {
-  id             Int  @id @default(autoincrement())
+  id             Int          @id @default(autoincrement())
   userId         Int
   organizationId Int
   departmentId   Int?
-  roleId         Int // References the Role model
+  roleId         Int
+  department     Department?  @relation(fields: [departmentId], references: [id])
+  organization   Organization @relation(fields: [organizationId], references: [id])
+  role           Role         @relation(fields: [roleId], references: [id])
+  user           User         @relation(fields: [userId], references: [id])
 
-  user         User         @relation(fields: [userId], references: [id])
-  organization Organization @relation(fields: [organizationId], references: [id])
-  department   Department?  @relation(fields: [departmentId], references: [id])
-  role         Role         @relation(fields: [roleId], references: [id])
-
-  // Ensures a user doesn't have duplicate roles in the same organization/department
   @@unique([userId, organizationId, departmentId])
   @@map("organizationRoles")
-}
-
-enum CallStatus {
-  OPENED
-  IN_PROGRESS
-  COMPLETED
-  FAILED
-  ON_HOLD
 }
 
 model CallCategory {
@@ -144,50 +127,154 @@ model CallCategory {
   departmentId   Int
   organizationId Int
   logo           String
-  expectedTime   Int // Expected time in minutes to complete this type of call
-  organization   Organization    @relation(fields: [organizationId], references: [id])
-  department     Department      @relation(fields: [departmentId], references: [id])
+  expectedTime   Int
   calls          Call[]
+  department     Department      @relation(fields: [departmentId], references: [id])
+  organization   Organization    @relation(fields: [organizationId], references: [id])
   recurringCalls RecurringCall[]
 
   @@map("callCategories")
 }
 
 model Call {
-  id              Int           @id @default(autoincrement())
-  description     String?
-  locationId      Int?
-  createdAt       DateTime      @default(now())
-  updatedAt       DateTime      @updatedAt
-  closedAt        DateTime?
-  callCategoryId  Int?
-  createdById     Int?
-  assignedToId    Int?
-  closedById      Int?
-  organizationId  Int
-  recurringCallId Int?
-  status          CallStatus
-  departmentId    Int?
-  CallMessage     CallMessage[]
-
-  createdBy         User?               @relation("CreatedCalls", fields: [createdById], references: [id])
+  id                Int                 @id @default(autoincrement())
+  description       String?
+  locationId        Int?
+  createdAt         DateTime            @default(now())
+  closedAt          DateTime?
+  departmentId      Int?
+  callCategoryId    Int?
+  createdById       Int?
+  assignedToId      Int?
+  closedById        Int?
+  organizationId    Int
+  recurringCallId   Int?
+  status            CallStatus
+  updatedAt         DateTime            @updatedAt
   assignedTo        User?               @relation("AssignedCalls", fields: [assignedToId], references: [id])
-  closedBy          User?               @relation("ClosedCalls", fields: [closedById], references: [id])
   callCategory      CallCategory?       @relation(fields: [callCategoryId], references: [id])
-  recurringCall     RecurringCall?      @relation("RecurringCall_Calls", fields: [recurringCallId], references: [id])
-  location          Location?           @relation(fields: [locationId], references: [id])
+  closedBy          User?               @relation("ClosedCalls", fields: [closedById], references: [id])
+  createdBy         User?               @relation("CreatedCalls", fields: [createdById], references: [id])
   Department        Department?         @relation(fields: [departmentId], references: [id])
+  location          Location?           @relation(fields: [locationId], references: [id])
+  recurringCall     RecurringCall?      @relation("RecurringCall_Calls", fields: [recurringCallId], references: [id])
+  CallMessage       CallMessage[]
   CallStatusHistory CallStatusHistory[]
 }
 
 model Permission {
-  id     Int  @id @default(autoincrement())
-  role   Role @relation(fields: [roleId], references: [id])
-  roleId Int
+  id       Int        @id @default(autoincrement())
+  roleId   Int
+  resource Resource
+  action   Action
+  scope    ScopeLevel
+  role     Role       @relation(fields: [roleId], references: [id])
+}
 
-  resource Resource // e.g., "users", "calls", etc.
-  action   Action // e.g., "view", "update", etc.
-  scope    ScopeLevel // e.g., "any", "own", "none"
+model RecurringCall {
+  id             Int                @id @default(autoincrement())
+  title          String
+  description    String?
+  departmentId   Int?
+  callCategoryId Int?
+  createdById    Int
+  organizationId Int
+  startDate      DateTime
+  endDate        DateTime?
+  frequency      RecurringFrequency
+  interval       Int                @default(1)
+  daysOfWeek     Int[]
+  times          String[]
+  exceptions     DateTime[]         @default(dbgenerated("(ARRAY[]::timestamp without time zone[])::timestamp(3) without time zone[]"))
+  baseCallId     Int?
+  locationId     Int
+  createdCalls   Call[]             @relation("RecurringCall_Calls")
+  callCategory   CallCategory?      @relation(fields: [callCategoryId], references: [id])
+  createdBy      User               @relation("UserRecurringCreatedCalls", fields: [createdById], references: [id])
+  department     Department?        @relation(fields: [departmentId], references: [id])
+  location       Location           @relation(fields: [locationId], references: [id])
+  organization   Organization       @relation(fields: [organizationId], references: [id])
+
+  @@map("recurringCalls")
+}
+
+model CallMessage {
+  id                    Int                     @id @default(autoincrement())
+  callId                Int
+  organizationId        Int
+  userId                Int
+  content               String?
+  createdAt             DateTime                @default(now())
+  call                  Call                    @relation(fields: [callId], references: [id])
+  organization          Organization            @relation(fields: [organizationId], references: [id])
+  user                  User                    @relation(fields: [userId], references: [id])
+  CallMessageAttachment CallMessageAttachment[]
+}
+
+model AiSettings {
+  id             Int          @id @default(autoincrement())
+  organizationId Int          @unique
+  fileUrls       String[]
+  contextText    String?
+  updatedAt      DateTime     @updatedAt
+  createdAt      DateTime     @default(now())
+  organization   Organization @relation(fields: [organizationId], references: [id])
+
+  @@map("aiSettings")
+}
+
+model CallStatusHistory {
+  id           Int         @id @default(autoincrement())
+  callId       Int
+  fromStatus   CallStatus?
+  toStatus     CallStatus
+  changedAt    DateTime    @default(now())
+  changedById  Int?
+  assignedToId Int?
+  userId       Int?
+  assignedTo   User?       @relation("AssignedToUser", fields: [assignedToId], references: [id])
+  call         Call        @relation(fields: [callId], references: [id])
+  changedBy    User?       @relation("ChangedByUser", fields: [changedById], references: [id])
+  User         User?       @relation(fields: [userId], references: [id])
+}
+
+model CallMessageAttachment {
+  id         Int         @id @default(autoincrement())
+  messageId  Int
+  fileUrl    String
+  fileType   String
+  fileName   String
+  uploadedAt DateTime    @default(now())
+  message    CallMessage @relation(fields: [messageId], references: [id], onDelete: Cascade)
+}
+
+model icon_vectors {
+  id        String                 @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  icon_name String?
+  tags      String[]
+  keyword   String?
+  file      String?
+  embedding Unsupported("vector")?
+}
+
+/// This model contains row level security and requires additional setup for migrations. Visit https://pris.ly/d/row-level-security for more info.
+model interested_people {
+  id         String   @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  email      String   @unique
+  created_at DateTime @default(now()) @db.Timestamptz(6)
+}
+
+enum UserType {
+  EMPLOYER
+  EMPLOYEE
+}
+
+enum CallStatus {
+  OPENED
+  IN_PROGRESS
+  COMPLETED
+  FAILED
+  ON_HOLD
 }
 
 enum RecurringFrequency {
@@ -218,85 +305,4 @@ enum ScopeLevel {
   any
   own
   none
-}
-
-model RecurringCall {
-  id             Int                @id @default(autoincrement())
-  title          String
-  description    String?
-  location       Location           @relation(fields: [locationId], references: [id])
-  departmentId   Int?
-  callCategoryId Int?
-  createdById    Int
-  organizationId Int
-  startDate      DateTime
-  endDate        DateTime?
-  frequency      RecurringFrequency
-  interval       Int                @default(1)
-  daysOfWeek     Int[]
-  times          String[]
-  exceptions     DateTime[]         @default([])
-  baseCallId     Int?
-  createdCalls   Call[]             @relation("RecurringCall_Calls")
-
-  createdBy    User          @relation("UserRecurringCreatedCalls", fields: [createdById], references: [id])
-  department   Department?   @relation(fields: [departmentId], references: [id])
-  callCategory CallCategory? @relation(fields: [callCategoryId], references: [id])
-  organization Organization  @relation(fields: [organizationId], references: [id])
-  locationId   Int
-
-  @@map("recurringCalls")
-}
-
-model CallMessage {
-  id             Int      @id @default(autoincrement())
-  callId         Int
-  organizationId Int
-  userId         Int
-  content        String?
-  createdAt      DateTime @default(now())
-
-  call                  Call                    @relation(fields: [callId], references: [id])
-  organization          Organization            @relation(fields: [organizationId], references: [id])
-  user                  User                    @relation(fields: [userId], references: [id])
-  CallMessageAttachment CallMessageAttachment[]
-}
-
-model AiSettings {
-  id             Int          @id @default(autoincrement())
-  organization   Organization @relation(fields: [organizationId], references: [id])
-  organizationId Int          @unique
-
-  fileUrls    String[]
-  contextText String?
-  updatedAt   DateTime @updatedAt
-  createdAt   DateTime @default(now())
-
-  @@map("aiSettings")
-}
-
-model CallStatusHistory {
-  id           Int         @id @default(autoincrement())
-  callId       Int
-  fromStatus   CallStatus?
-  toStatus     CallStatus
-  changedAt    DateTime    @default(now())
-  changedById  Int?
-  assignedToId Int?
-  call         Call        @relation(fields: [callId], references: [id])
-  changedBy    User?       @relation("ChangedByUser", fields: [changedById], references: [id])
-  assignedTo   User?       @relation("AssignedToUser", fields: [assignedToId], references: [id])
-  User         User?       @relation(fields: [userId], references: [id])
-  userId       Int?
-}
-
-model CallMessageAttachment {
-  id         Int      @id @default(autoincrement())
-  messageId  Int
-  fileUrl    String
-  fileType   String
-  fileName   String
-  uploadedAt DateTime @default(now())
-
-  message CallMessage @relation(fields: [messageId], references: [id], onDelete: Cascade)
 }
