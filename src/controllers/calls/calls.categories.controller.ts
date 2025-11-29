@@ -87,7 +87,7 @@ export const deleteCategory = asyncHandler(
       if (!category) return;
 
       // Delete logo if it exists
-      if (category.logo) await deleteImage(category.logo);
+      // if (category.logo) await deleteImage(category.logo);
 
       // Delete the category
       await prismaClient.callCategory.delete({
