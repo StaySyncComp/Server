@@ -14,7 +14,9 @@ export const getCalls = asyncHandler(async (req, res): Promise<any> => {
       { path: "callCategory.name", field: "ar" },
     ],
     include: {
-      callCategory: { select: { name: true, id: true, expectedTime: true } },
+      callCategory: {
+        select: { name: true, id: true, expectedTime: true, logo: true },
+      },
       assignedTo: { select: { id: true, name: true } },
       createdBy: { select: { id: true, name: true } },
       Department: { select: { name: true, id: true } },
