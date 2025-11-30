@@ -153,3 +153,26 @@ export const createGuestCall = asyncHandler(
     }
   }
 );
+
+export const getGuestCalls = asyncHandler(
+  async (req: ExtendedRequestGuest, res: Response): Promise<any> => {
+    if (!req.user) return res.status(401).json({ message: "Unauthorized" });
+    const { locationId } = req.user;
+    const calls = await prismaClient.call.findMany({
+      where: { locationId: Number(locationId) },
+      include: {
+        callCategory: { select: { name: true, id: true, expectedTime: true } },
+        assignedTo: { select: { id: true, name: true } },
+        createdBy: { select: { id: true, name: true } },
+        Department: { select: { name: true, id: true } },
+        CallStatusHistory: {
+          include: {
+            changedBy: { select: { name: true, id: true, logo: true } },
+            assignedTo: { select: { id: true, name: true } },
+          },
+        },
+      },
+    });
+    res.status(200).json(calls);
+  }
+);
