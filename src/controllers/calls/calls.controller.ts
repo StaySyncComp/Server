@@ -138,7 +138,7 @@ export const createNewCall = asyncHandler(
         },
         include: {
           callCategory: {
-            select: { name: true, id: true, expectedTime: true },
+            select: { name: true, id: true, expectedTime: true, logo: true },
           },
           assignedTo: { select: { id: true, name: true } },
           createdBy: { select: { id: true, name: true } },
