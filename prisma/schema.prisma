@@ -298,6 +298,7 @@ enum Resource {
   roles
   reports
   departments
+  areas
   app
 }
 
