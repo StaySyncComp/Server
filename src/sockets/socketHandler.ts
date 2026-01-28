@@ -83,8 +83,71 @@ export const setupSocketHandlers = (io: Server, socket: Socket) => {
     }
   );
 
-  socket.on("sendMessage", (data) => {
-    console.log("Received message:", data);
-    // You can also use emitToAuthorizedSockets here if needed
+  socket.on("joinLocationRoom", (locationId) => {
+    console.log(`Socket ${socket.id} joining location room:`, locationId);
+    socket.join(`location-${locationId}`);
   });
+
+  socket.on("leaveLocationRoom", (locationId) => {
+    console.log(`Socket ${socket.id} leaving location room:`, locationId);
+    socket.leave(`location-${locationId}`);
+  });
+
+  socket.on(
+    "location:sendMessage",
+    async ({ locationId, userId, organizationId, content, attachments = [] }) => {
+      console.log(attachments, "location attachments");
+
+      if (!locationId || !userId || !organizationId) {
+        console.error("Missing locationId, userId, or organizationId", {
+          locationId,
+          userId,
+          organizationId,
+        });
+        return;
+      }
+
+      try {
+        const message = await prismaClient.locationMessage.create({
+          data: {
+            content: content || null,
+            location: { connect: { id: locationId } },
+            user: { connect: { id: userId } },
+            organization: { connect: { id: organizationId } },
+          },
+          include: {
+            user: true,
+          },
+        });
+
+        if (attachments.length > 0) {
+          await prismaClient.locationMessageAttachment.createMany({
+            data: attachments.map((att: any) => ({
+              messageId: message.id,
+              fileUrl: att.fileUrl,
+              fileType: att.fileType,
+              fileName: att.fileName,
+            })),
+          });
+
+          const fullAttachments =
+            await prismaClient.locationMessageAttachment.findMany({
+              where: { messageId: message.id },
+            });
+
+          io.to(`location-${locationId}`).emit("location:message", {
+            ...message,
+            LocationMessageAttachment: fullAttachments,
+          });
+        } else {
+          io.to(`location-${locationId}`).emit("location:message", {
+            ...message,
+            LocationMessageAttachment: [],
+          });
+        }
+      } catch (err) {
+        console.error("Error creating location message:", err);
+      }
+    }
+  );
 };

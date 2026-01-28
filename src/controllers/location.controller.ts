@@ -181,3 +181,23 @@ export const listLocationsForAi = asyncHandler(
     });
   }
 );
+
+export const getLocationMessages = asyncHandler(
+  async (req: ExtendedRequest, res: Response) => {
+    const { id } = req.params;
+    try {
+      const messages = await prismaClient.locationMessage.findMany({
+        where: { locationId: Number(id) },
+        include: {
+          user: true,
+          LocationMessageAttachment: true,
+        },
+        orderBy: { createdAt: "asc" },
+      });
+      res.status(200).json(messages);
+    } catch (error) {
+      console.error("Error fetching location messages:", error);
+      res.status(500).json({ message: "Server error" });
+    }
+  }
+);
