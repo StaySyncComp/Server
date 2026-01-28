@@ -8,6 +8,7 @@ import {
   updateLocation,
   upsertLocations,
   listLocationsForAi,
+  getLocationMessages,
 } from "../controllers/location.controller";
 import { verifyJWT } from "../middlewares/JTW.middleware";
 
@@ -22,3 +23,4 @@ locationRouter.post("/", middlewares, createLocation);
 locationRouter.delete("/:id", middlewares, deleteLocation);
 locationRouter.put("/:id", middlewares, updateLocation);
 locationRouter.post("/upsert", middlewares, upsertLocations);
+locationRouter.get("/:id/messages", middlewares, getLocationMessages);

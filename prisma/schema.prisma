@@ -28,8 +28,9 @@ model User {
   organizationRoles     OrganizationRole[]
   Organization          Organization[]
   recurringCreatedCalls RecurringCall[]     @relation("UserRecurringCreatedCalls")
-  assignedRoomStates RoomState[]
-  performedRoomActions RoomStateHistory[]
+  assignedRoomStates    RoomState[]
+  performedRoomActions  RoomStateHistory[]
+  LocationMessage       LocationMessage[]
 
   @@map("users")
 }
@@ -43,6 +44,7 @@ model Organization {
   ownerId           Int
   aiSettingsId      Int?
   CallMessage       CallMessage[]
+  LocationMessage   LocationMessage[]
   aiSettings        AiSettings?
   Area              Area[]
   CallCategory      CallCategory[]
@@ -71,17 +73,18 @@ model Department {
 }
 
 model Location {
-  id             Int             @id @default(autoincrement())
-  name           Json
-  roomNumber     Int?
-  color          String?
-  organizationId Int
-  areaId         Int
-  Call           Call[]
-  area           Area            @relation(fields: [areaId], references: [id])
-  organization   Organization    @relation(fields: [organizationId], references: [id])
-  RecurringCall  RecurringCall[]
-  roomState      RoomState?
+  id              Int               @id @default(autoincrement())
+  name            Json
+  roomNumber      Int?
+  color           String?
+  organizationId  Int
+  areaId          Int
+  Call            Call[]
+  area            Area              @relation(fields: [areaId], references: [id])
+  organization    Organization      @relation(fields: [organizationId], references: [id])
+  RecurringCall   RecurringCall[]
+  roomState       RoomState?
+  LocationMessage LocationMessage[]
 
   @@map("locations")
 }
@@ -354,4 +357,27 @@ enum ScopeLevel {
   any
   own
   none
+}
+
+model LocationMessage {
+  id                        Int                         @id @default(autoincrement())
+  locationId                Int
+  organizationId            Int
+  userId                    Int
+  content                   String?
+  createdAt                 DateTime                    @default(now())
+  location                  Location                    @relation(fields: [locationId], references: [id])
+  organization              Organization                @relation(fields: [organizationId], references: [id])
+  user                      User                        @relation(fields: [userId], references: [id])
+  LocationMessageAttachment LocationMessageAttachment[]
+}
+
+model LocationMessageAttachment {
+  id        Int             @id @default(autoincrement())
+  messageId Int
+  fileUrl   String
+  fileType  String
+  fileName  String
+  uploadedAt DateTime       @default(now())
+  message   LocationMessage @relation(fields: [messageId], references: [id], onDelete: Cascade)
 }
