@@ -28,8 +28,8 @@ model User {
   organizationRoles     OrganizationRole[]
   Organization          Organization[]
   recurringCreatedCalls RecurringCall[]     @relation("UserRecurringCreatedCalls")
-  assignedCleaningRooms CleaningRoomState[]
-  performedCleaningActions CleaningHistory[]
+  assignedRoomStates RoomState[]
+  performedRoomActions RoomStateHistory[]
 
   @@map("users")
 }
@@ -81,7 +81,7 @@ model Location {
   area           Area            @relation(fields: [areaId], references: [id])
   organization   Organization    @relation(fields: [organizationId], references: [id])
   RecurringCall  RecurringCall[]
-  cleaningState  CleaningRoomState?
+  roomState      RoomState?
 
   @@map("locations")
 }
@@ -174,44 +174,44 @@ model Permission {
   role     Role       @relation(fields: [roleId], references: [id])
 }
 
-model CleaningRoomState {
-  id             Int                @id @default(autoincrement())
-  locationId     Int                @unique
-  status         RoomCleaningStatus @default(dirty)
-  priority       CleaningPriority   @default(normal)
+model RoomState {
+  id             Int        @id @default(autoincrement())
+  locationId     Int        @unique
+  status         RoomStatus @default(vacant_dirty)
+  priority       RoomPriority   @default(normal)
   assignedToId   Int?
   lastCleanedAt  DateTime?
   updatedAt      DateTime           @updatedAt
   
   location       Location           @relation(fields: [locationId], references: [id])
   assignedTo     User?              @relation(fields: [assignedToId], references: [id])
-  history        CleaningHistory[]
+  history        RoomStateHistory[]
 
-  @@map("cleaning_room_states")
+  @@map("room_states")
 }
 
-model CleaningHistory {
-  id                  Int               @id @default(autoincrement())
-  cleaningRoomStateId Int
+model RoomStateHistory {
+  id                  Int       @id @default(autoincrement())
+  roomStateId         Int
   action              String
   performedById       Int?
-  createdAt           DateTime          @default(now())
+  createdAt           DateTime  @default(now())
 
-  cleaningRoomState   CleaningRoomState @relation(fields: [cleaningRoomStateId], references: [id])
-  performedBy         User?             @relation(fields: [performedById], references: [id])
+  roomState           RoomState @relation(fields: [roomStateId], references: [id])
+  performedBy         User?     @relation(fields: [performedById], references: [id])
 
-  @@map("cleaning_history")
+  @@map("room_state_history")
 }
 
-enum RoomCleaningStatus {
-  dirty
-  in_progress
-  clean
-  inspected
+enum RoomStatus {
+  vacant_dirty
+  vacant_clean
+  occupied_clean
+  occupied_dirty
   do_not_disturb
 }
 
-enum CleaningPriority {
+enum RoomPriority {
   low
   normal
   high
