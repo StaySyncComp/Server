@@ -28,6 +28,8 @@ model User {
   organizationRoles     OrganizationRole[]
   Organization          Organization[]
   recurringCreatedCalls RecurringCall[]     @relation("UserRecurringCreatedCalls")
+  assignedCleaningRooms CleaningRoomState[]
+  performedCleaningActions CleaningHistory[]
 
   @@map("users")
 }
@@ -79,6 +81,7 @@ model Location {
   area           Area            @relation(fields: [areaId], references: [id])
   organization   Organization    @relation(fields: [organizationId], references: [id])
   RecurringCall  RecurringCall[]
+  cleaningState  CleaningRoomState?
 
   @@map("locations")
 }
@@ -169,6 +172,49 @@ model Permission {
   action   Action
   scope    ScopeLevel
   role     Role       @relation(fields: [roleId], references: [id])
+}
+
+model CleaningRoomState {
+  id             Int                @id @default(autoincrement())
+  locationId     Int                @unique
+  status         RoomCleaningStatus @default(dirty)
+  priority       CleaningPriority   @default(normal)
+  assignedToId   Int?
+  lastCleanedAt  DateTime?
+  updatedAt      DateTime           @updatedAt
+  
+  location       Location           @relation(fields: [locationId], references: [id])
+  assignedTo     User?              @relation(fields: [assignedToId], references: [id])
+  history        CleaningHistory[]
+
+  @@map("cleaning_room_states")
+}
+
+model CleaningHistory {
+  id                  Int               @id @default(autoincrement())
+  cleaningRoomStateId Int
+  action              String
+  performedById       Int?
+  createdAt           DateTime          @default(now())
+
+  cleaningRoomState   CleaningRoomState @relation(fields: [cleaningRoomStateId], references: [id])
+  performedBy         User?             @relation(fields: [performedById], references: [id])
+
+  @@map("cleaning_history")
+}
+
+enum RoomCleaningStatus {
+  dirty
+  in_progress
+  clean
+  inspected
+  do_not_disturb
+}
+
+enum CleaningPriority {
+  low
+  normal
+  high
 }
 
 model RecurringCall {
@@ -299,6 +345,7 @@ enum Resource {
   reports
   departments
   app
+  cleaning
 }
 
 enum ScopeLevel {

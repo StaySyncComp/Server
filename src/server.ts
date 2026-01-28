@@ -45,7 +45,10 @@ app.use("/ai", aiRouter);
 app.use("/icons", IconsRouter);
 app.use("/reports", reportsRouter);
 app.use("/areas", areasRouter);
+import cleaningRouter from "./routes/cleaning.routes";
+
 app.use("/guest", guestRouter);
+app.use("/cleaning", cleaningRouter);
 
 // Health check endpoint
 // @ts-ignore
