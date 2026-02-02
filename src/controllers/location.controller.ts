@@ -43,6 +43,8 @@ export const getAllLocations = asyncHandler(
       const { organizationId } = req.query;
       const result = await prismaClient.location.findMany({
         where: { organizationId: Number(organizationId) },
+        include: { area: true },
+        orderBy: { roomNumber: 'asc' }
       });
       res.status(200).json(result);
     } catch (error) {
