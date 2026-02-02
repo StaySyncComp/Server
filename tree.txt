@@ -1,0 +1,120 @@
+﻿Server
++-- prisma
+|   +-- migrations
+|   |   +-- 20241213135709_create_users_table
+|   |   |   \-- migration.sql
+|   |   +-- 20241213174147_create_styles
+|   |   |   \-- migration.sql
+|   |   +-- 20241213174235_create_styles
+|   |   |   \-- migration.sql
+|   |   +-- 20241213174925_create_styles
+|   |   |   \-- migration.sql
+|   |   +-- 20241213181839_create_styles
+|   |   |   \-- migration.sql
+|   |   +-- 20241213182252_create_styles
+|   |   |   \-- migration.sql
+|   |   +-- 20250511181250_call_location
+|   |   |   \-- migration.sql
+|   |   +-- 20250512142713_recurring_calls
+|   |   |   \-- migration.sql
+|   |   +-- 20250513212531_permissions
+|   |   |   \-- migration.sql
+|   |   +-- 20250513213733_give_name
+|   |   |   \-- migration.sql
+|   |   +-- 20250518161808_ai_precontext
+|   |   |   \-- migration.sql
+|   |   +-- 20250528161243_push_tokens
+|   |   |   \-- migration.sql
+|   |   +-- 20250602213321_phone_number
+|   |   |   \-- migration.sql
+|   |   +-- 20250606162012_add_call_status_history
+|   |   |   \-- migration.sql
+|   |   +-- 20250607172848_add_call_status_history
+|   |   |   \-- migration.sql
+|   |   +-- 20250614173859_guest_callasdasd
+|   |   |   \-- migration.sql
+|   |   +-- 20250615165652_guest_callasdasd
+|   |   |   \-- migration.sql
+|   |   +-- 20250619012737_files_to_chats
+|   |   |   \-- migration.sql
+|   |   +-- 20250619012924_files_to_chats
+|   |   |   \-- migration.sql
+|   |   +-- 20250619020356_add_cascade_delete
+|   |   |   \-- migration.sql
+|   |   +-- 20260128145514_init_room_management
+|   |   |   \-- migration.sql
+|   |   \-- migration_lock.toml
+|   \-- schema.prisma
++-- src
+|   +-- controllers
+|   |   +-- calls
+|   |   |   +-- calls.categories.controller.ts
+|   |   |   +-- calls.controller.ts
+|   |   |   \-- calls.recurring.controller.ts
+|   |   +-- ai.controller.ts
+|   |   +-- area.controller.ts
+|   |   +-- auth.controller.ts
+|   |   +-- cleaningController.ts
+|   |   +-- department.controller.ts
+|   |   +-- guest.controller.ts
+|   |   +-- Icons.controller.ts
+|   |   +-- location.controller.ts
+|   |   +-- organization.controller.ts
+|   |   +-- permission.controller.ts
+|   |   +-- reports.controller.ts
+|   |   +-- role.controller.ts
+|   |   \-- users.controller.ts
+|   +-- jobs
+|   |   +-- recurringJob.ts
+|   |   \-- roomStatusJob.ts
+|   +-- middlewares
+|   |   +-- JTW.middleware.ts
+|   |   \-- permission.middleware.ts
+|   +-- routes
+|   |   +-- calls
+|   |   |   +-- calls.base.routes.ts
+|   |   |   +-- calls.categories.routes.ts
+|   |   |   +-- calls.recurring.routes.ts
+|   |   |   \-- calls.routes.ts
+|   |   +-- ai.routes.ts
+|   |   +-- areas.routes.ts
+|   |   +-- auth.routes.ts
+|   |   +-- cleaning.routes.ts
+|   |   +-- departments.routes.ts
+|   |   +-- guest.routes.ts
+|   |   +-- Icons.routes.ts
+|   |   +-- locations.routes.ts
+|   |   +-- organization.routes.ts
+|   |   +-- permission.routes.ts
+|   |   +-- reports.routes.ts
+|   |   +-- role.routes.ts
+|   |   \-- user.routes.ts
+|   +-- services
+|   |   +-- recurringCalls.ts
+|   |   \-- userServiceExpo.ts
+|   +-- sockets
+|   |   +-- index.ts
+|   |   \-- socketHandler.ts
+|   +-- types
+|   |   \-- users
+|   |       \-- usersRequests.ts
+|   +-- utils
+|   |   +-- authUtils.ts
+|   |   +-- constants.ts
+|   |   +-- controllerUtils.ts
+|   |   +-- dynamicData.ts
+|   |   +-- expo.ts
+|   |   +-- fastapiClient.ts
+|   |   +-- manualCreateToken.ts
+|   |   +-- permissionsUtils.ts
+|   |   +-- supabaseUtils.ts
+|   |   \-- tokenUtils.ts
+|   +-- prisma.ts
+|   \-- server.ts
++-- .env
++-- .gitignore
++-- Dockerfile
++-- generate_tree.ps1
++-- package-lock.json
++-- package.json
+\-- tsconfig.json
